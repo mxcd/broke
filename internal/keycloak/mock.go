@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mxcd/broke/internal/util"
 	"github.com/rs/zerolog/log"
 )
 
@@ -43,6 +44,12 @@ type KeycloakMockServerUser struct {
 
 func StartMockServer(ctx context.Context, config *KeycloakMockServerConfig) *http.Server {
 	router := gin.Default()
+
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+		})
+	})
 
 	// Endpoint to mock GetToken
 	router.POST("/realms/:realm/protocol/openid-connect/token", func(c *gin.Context) {
@@ -111,6 +118,8 @@ func StartMockServer(ctx context.Context, config *KeycloakMockServerConfig) *htt
 			log.Fatal().Msgf("listen: %s\n", err)
 		}
 	}()
+
+	util.WaitForServerUp("http://localhost:" + strconv.Itoa(config.Port) + "/health")
 
 	return server
 }
