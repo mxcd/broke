@@ -40,4 +40,4 @@ jobs:
         with:
           go-version: 1.21
       - name: build cli
-        run: go build main.go -o broke
+        run: go build -o broke main.go
