@@ -27,3 +27,13 @@ func WaitForServerUp(url string) {
 		time.Sleep(5 * time.Millisecond)
 	}
 }
+
+func ListLimitOffset[T any](data []T, limit int, offset int) []T {
+	if offset >= len(data) {
+		return []T{}
+	}
+	if offset+limit > len(data) {
+		return data[offset:]
+	}
+	return data[offset : offset+limit]
+}

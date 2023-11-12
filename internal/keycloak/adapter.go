@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Nerzal/gocloak/v13"
+	"github.com/rs/zerolog/log"
 )
 
 type KeycloakAdapter struct {
@@ -63,6 +64,68 @@ func NewKeycloakAdapter(ctx context.Context, config *KeycloakAdapterConfig) (*Ke
 	}, nil
 }
 
-func (k *KeycloakAdapter) GetUserCount(ctx context.Context) (int, error) {
+func (k *KeycloakAdapter) GetUsersCount(ctx context.Context) (int, error) {
 	return k.Client.GetUserCount(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{})
+}
+
+func (k *KeycloakAdapter) GetUsers(ctx context.Context) ([]*gocloak.User, error) {
+	pageSize := 100
+	usersCount, err := k.GetUsersCount(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("error getting users count for getting users")
+		return nil, err
+	}
+	result := make([]*gocloak.User, 0, usersCount)
+	currentUserCount := len(result)
+	for {
+		users, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
+			Max:   &pageSize,
+			First: &currentUserCount,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("error getting users")
+			return nil, err
+		}
+		result = append(result, users...)
+
+		if len(users) == usersCount || len(users) == 0 {
+			break
+		} else {
+			currentUserCount = len(result)
+		}
+	}
+	return result, nil
+}
+
+func (k *KeycloakAdapter) GetGroupsCount(ctx context.Context) (int, error) {
+	return k.Client.GetGroupsCount(ctx, k.Token.AccessToken, k.Realm, gocloak.GetGroupsParams{})
+}
+
+func (k *KeycloakAdapter) GetGroups(ctx context.Context) ([]*gocloak.Group, error) {
+	pageSize := 100
+	groupsCount, err := k.GetGroupsCount(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("error getting groups count for getting groups")
+		return nil, err
+	}
+	result := make([]*gocloak.Group, 0, groupsCount)
+	currentGroupCount := len(result)
+	for {
+		groups, err := k.Client.GetGroups(ctx, k.Token.AccessToken, k.Realm, gocloak.GetGroupsParams{
+			Max:   &pageSize,
+			First: &currentGroupCount,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("error getting groups")
+			return nil, err
+		}
+		result = append(result, groups...)
+
+		if len(groups) == groupsCount || len(groups) == 0 {
+			break
+		} else {
+			currentGroupCount = len(result)
+		}
+	}
+	return result, nil
 }

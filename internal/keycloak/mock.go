@@ -28,7 +28,8 @@ type KeycloakMockServerConfig struct {
 }
 
 type KeycloakMockServerData struct {
-	Users []KeycloakMockServerUser `json:"users"`
+	Users  []KeycloakMockServerUser  `json:"users"`
+	Groups []KeycloakMockServerGroup `json:"groups"`
 }
 
 type KeycloakMockServerUser struct {
@@ -40,6 +41,13 @@ type KeycloakMockServerUser struct {
 	LastName      string   `json:"lastName"`
 	Email         string   `json:"email"`
 	Groups        []string `json:"groups"`
+}
+
+type KeycloakMockServerGroup struct {
+	Id        string   `json:"id"`
+	Name      string   `json:"name"`
+	Path      string   `json:"path"`
+	SubGroups []string `json:"subGroups"`
 }
 
 func StartMockServer(ctx context.Context, config *KeycloakMockServerConfig) *http.Server {
@@ -89,15 +97,6 @@ func StartMockServer(ctx context.Context, config *KeycloakMockServerConfig) *htt
 
 	// Endpoint to mock GetUserCount
 	router.GET("/admin/realms/:realm/users/count", func(c *gin.Context) {
-
-		// print all request headers
-		for name, values := range c.Request.Header {
-			for _, value := range values {
-				log.Debug().Msgf("%s: %s", name, value)
-			}
-		}
-
-		// get the realm from the request
 		realm := c.Param("realm")
 		if realm != config.Realm {
 			log.Error().Msgf("invalid realm")
@@ -105,7 +104,63 @@ func StartMockServer(ctx context.Context, config *KeycloakMockServerConfig) *htt
 		}
 
 		c.Header("Content-Type", "application/json")
-		c.String(http.StatusOK, strconv.Itoa(len(config.Data.Users)))
+		c.JSON(http.StatusOK, len(config.Data.Users))
+	})
+
+	router.GET("/admin/realms/:realm/users", func(c *gin.Context) {
+		realm := c.Param("realm")
+		if realm != config.Realm {
+			log.Error().Msgf("invalid realm")
+			c.Status(http.StatusBadRequest)
+		}
+		firstString := c.Query("first")
+		first, err := strconv.Atoi(firstString)
+		if err != nil {
+			log.Error().Err(err).Msgf("invalid first")
+			c.Status(http.StatusBadRequest)
+		}
+		maxString := c.Query("max")
+		max, err := strconv.Atoi(maxString)
+		if err != nil {
+			log.Error().Err(err).Msgf("invalid max")
+			c.Status(http.StatusBadRequest)
+		}
+		c.Header("Content-Type", "application/json")
+		c.JSON(http.StatusOK, util.ListLimitOffset(config.Data.Users, max, first))
+	})
+
+	router.GET("/admin/realms/:realm/groups/count", func(c *gin.Context) {
+		realm := c.Param("realm")
+		if realm != config.Realm {
+			log.Error().Msgf("invalid realm")
+			c.Status(http.StatusBadRequest)
+		}
+		c.Header("Content-Type", "application/json")
+		c.JSON(http.StatusOK, gin.H{"count": len(config.Data.Groups)})
+	})
+
+	// endpoint to get mock groups
+	router.GET("/admin/realms/:realm/groups", func(c *gin.Context) {
+		// get the realm from the request
+		realm := c.Param("realm")
+		if realm != config.Realm {
+			log.Error().Msgf("invalid realm")
+			c.Status(http.StatusBadRequest)
+		}
+		firstString := c.Query("first")
+		first, err := strconv.Atoi(firstString)
+		if err != nil {
+			log.Error().Err(err).Msgf("invalid first")
+			c.Status(http.StatusBadRequest)
+		}
+		maxString := c.Query("max")
+		max, err := strconv.Atoi(maxString)
+		if err != nil {
+			log.Error().Err(err).Msgf("invalid max")
+			c.Status(http.StatusBadRequest)
+		}
+		c.Header("Content-Type", "application/json")
+		c.JSON(http.StatusOK, util.ListLimitOffset(config.Data.Groups, max, first))
 	})
 
 	server := &http.Server{

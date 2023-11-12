@@ -49,6 +49,7 @@ require (
 
 require (
 	github.com/gin-gonic/gin v1.9.1
+	github.com/google/uuid v1.4.0
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mxcd/go-config v1.1.0
