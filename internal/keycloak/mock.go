@@ -44,10 +44,11 @@ type KeycloakMockServerUser struct {
 }
 
 type KeycloakMockServerGroup struct {
-	Id        string   `json:"id"`
-	Name      string   `json:"name"`
-	Path      string   `json:"path"`
-	SubGroups []string `json:"subGroups"`
+	Id         string   `json:"id"`
+	Name       string   `json:"name"`
+	Path       string   `json:"path"`
+	SubGroups  []string `json:"subGroups"`
+	RealmRoles []string `json:"realmRoles"`
 }
 
 func StartMockServer(ctx context.Context, config *KeycloakMockServerConfig) *http.Server {
@@ -161,6 +162,68 @@ func StartMockServer(ctx context.Context, config *KeycloakMockServerConfig) *htt
 		}
 		c.Header("Content-Type", "application/json")
 		c.JSON(http.StatusOK, util.ListLimitOffset(config.Data.Groups, max, first))
+	})
+
+	router.GET("/admin/realms/:realm/groups/:groupid", func(c *gin.Context) {
+		// get the realm from the request
+		realm := c.Param("realm")
+		if realm != config.Realm {
+			log.Error().Msgf("invalid realm")
+			c.Status(http.StatusBadRequest)
+		}
+
+		groupId := c.Param("groupid")
+		if groupId == "" {
+			log.Error().Msgf("invalid group id")
+			c.Status(http.StatusBadRequest)
+		}
+
+		var group *KeycloakMockServerGroup = nil
+		for _, g := range config.Data.Groups {
+			if g.Id == groupId {
+				group = &g
+				break
+			}
+		}
+		if group == nil {
+			log.Error().Msgf("group not found")
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		c.Header("Content-Type", "application/json")
+		c.JSON(http.StatusOK, group)
+	})
+
+	router.GET("/admin/realms/:realm/groups/:groupid/members", func(c *gin.Context) {
+		// get the realm from the request
+		realm := c.Param("realm")
+		if realm != config.Realm {
+			log.Error().Msgf("invalid realm")
+			c.Status(http.StatusBadRequest)
+		}
+
+		groupId := c.Param("groupid")
+		if groupId == "" {
+			log.Error().Msgf("invalid group id")
+			c.Status(http.StatusBadRequest)
+		}
+
+		var group *KeycloakMockServerGroup = nil
+		for _, g := range config.Data.Groups {
+			if g.Id == groupId {
+				group = &g
+				break
+			}
+		}
+		if group == nil {
+			log.Error().Msgf("group not found")
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		c.Header("Content-Type", "application/json")
+		c.JSON(http.StatusOK, group)
 	})
 
 	server := &http.Server{

@@ -16,7 +16,7 @@ type KeycloakAdapter struct {
 	Realm  string
 }
 
-type KeycloakAdapterConfig struct {
+type KeycloakAdapterOptions struct {
 	Url      string `yaml:"url"`
 	Realm    string `yaml:"realm"`
 	Username string `yaml:"username"`
@@ -24,35 +24,35 @@ type KeycloakAdapterConfig struct {
 	Insecure *bool  `yaml:"insecure,omitempty"`
 }
 
-func NewKeycloakAdapter(ctx context.Context, config *KeycloakAdapterConfig) (*KeycloakAdapter, error) {
-	if config.Url == "" {
+func NewKeycloakAdapter(ctx context.Context, options *KeycloakAdapterOptions) (*KeycloakAdapter, error) {
+	if options.Url == "" {
 		return nil, fmt.Errorf("KeycloakAdapterConfig.Url is empty")
 	}
-	if !strings.HasPrefix(config.Url, "http://") && !strings.HasPrefix(config.Url, "https://") {
+	if !strings.HasPrefix(options.Url, "http://") && !strings.HasPrefix(options.Url, "https://") {
 		return nil, fmt.Errorf("KeycloakAdapterConfig.Url must start with http:// or https://")
 	}
-	if config.Realm == "" {
+	if options.Realm == "" {
 		return nil, fmt.Errorf("KeycloakAdapterConfig.Realm is empty")
 	}
-	if config.Username == "" {
+	if options.Username == "" {
 		return nil, fmt.Errorf("KeycloakAdapterConfig.Username is empty")
 	}
-	if config.Password == "" {
+	if options.Password == "" {
 		return nil, fmt.Errorf("KeycloakAdapterConfig.Password is empty")
 	}
-	if config.Insecure == nil {
+	if options.Insecure == nil {
 		insecure := false
-		config.Insecure = &insecure
+		options.Insecure = &insecure
 	}
 
-	client := gocloak.NewClient(config.Url)
-	if *config.Insecure {
+	client := gocloak.NewClient(options.Url)
+	if *options.Insecure {
 		restyClient := client.RestyClient()
 		restyClient.SetDebug(true)
 		restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	}
 
-	token, err := client.LoginAdmin(ctx, config.Username, config.Password, config.Realm)
+	token, err := client.LoginAdmin(ctx, options.Username, options.Password, options.Realm)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func NewKeycloakAdapter(ctx context.Context, config *KeycloakAdapterConfig) (*Ke
 	return &KeycloakAdapter{
 		Client: client,
 		Token:  token,
-		Realm:  config.Realm,
+		Realm:  options.Realm,
 	}, nil
 }
 
@@ -75,7 +75,7 @@ func (k *KeycloakAdapter) GetUsers(ctx context.Context) ([]*gocloak.User, error)
 		log.Error().Err(err).Msg("error getting users count for getting users")
 		return nil, err
 	}
-	result := make([]*gocloak.User, 0, usersCount)
+	result := []*gocloak.User{}
 	currentUserCount := len(result)
 	for {
 		users, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
@@ -128,4 +128,16 @@ func (k *KeycloakAdapter) GetGroups(ctx context.Context) ([]*gocloak.Group, erro
 		}
 	}
 	return result, nil
+}
+
+func (k *KeycloakAdapter) GetGroup(ctx context.Context, id string) (*gocloak.Group, error) {
+	return k.Client.GetGroup(ctx, k.Token.AccessToken, k.Realm, id)
+}
+
+func (k *KeycloakAdapter) GetGroupUsers(ctx context.Context, id string) ([]*gocloak.User, error) {
+	return k.Client.GetGroupMembers(ctx, k.Token.AccessToken, k.Realm, id, gocloak.GetGroupsParams{})
+}
+
+func (k *KeycloakAdapter) GetRoleUsers(ctx context.Context, name string) ([]*gocloak.User, error) {
+	return k.Client.GetUsersByRoleName(ctx, k.Token.AccessToken, k.Realm, name, gocloak.GetUsersByRoleParams{})
 }

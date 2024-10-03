@@ -52,11 +52,14 @@ func getMockServerConfig() *KeycloakMockServerConfig {
 		}
 	}
 
+	mockServerConfig.Data.Groups[0].RealmRoles = []string{"foo, bar"}
+	mockServerConfig.Data.Groups[1].RealmRoles = []string{"fizz, buzz"}
+
 	return mockServerConfig
 }
 
 func getAdapter(ctx context.Context, t *testing.T) *KeycloakAdapter {
-	adapter, err := NewKeycloakAdapter(ctx, &KeycloakAdapterConfig{
+	adapter, err := NewKeycloakAdapter(ctx, &KeycloakAdapterOptions{
 		Url:      "http://localhost:28080",
 		Realm:    "test",
 		Username: "admin",
@@ -124,4 +127,50 @@ func TestGetGroups(t *testing.T) {
 	assert.NoError(t, err, "error getting groups")
 
 	assert.Equal(t, len(mockServerConfig.Data.Groups), len(groups), "The group count should be equal to the number of groups in the mock server config")
+}
+
+func TestGetGroup(t *testing.T) {
+	ctx := context.Background()
+
+	mockServerConfig := getMockServerConfig()
+
+	server := StartMockServer(ctx, mockServerConfig)
+	defer server.Shutdown(ctx)
+
+	adapter := getAdapter(ctx, t)
+	groups, err := adapter.GetGroups(ctx)
+	assert.NoError(t, err, "error getting groups")
+
+	group1Id := groups[0].ID
+	group1, err := adapter.GetGroup(ctx, *group1Id)
+	assert.NoError(t, err, "error getting group")
+	assert.Equal(t, *group1Id, *group1.ID, "The group id should be equal to the id of the group that was requested")
+
+	group2Id := groups[1].ID
+	group2, err := adapter.GetGroup(ctx, *group2Id)
+	assert.NoError(t, err, "error getting group")
+	assert.Equal(t, *group2Id, *group2.ID, "The group id should be equal to the id of the group that was requested")
+}
+
+func TestGetGroupUsers(t *testing.T) {
+	ctx := context.Background()
+
+	mockServerConfig := getMockServerConfig()
+
+	server := StartMockServer(ctx, mockServerConfig)
+	defer server.Shutdown(ctx)
+
+	adapter := getAdapter(ctx, t)
+	groups, err := adapter.GetGroups(ctx)
+	assert.NoError(t, err, "error getting groups")
+
+	group1Id := groups[0].ID
+	group1Users, err := adapter.GetGroupUsers(ctx, *group1Id)
+	assert.NoError(t, err, "error getting group users")
+	assert.Equal(t, len(mockServerConfig.Data.Users)%len(mockServerConfig.Data.Groups), len(group1Users), "The group user count should be equal to the number of users in the mock server config")
+
+	group2Id := groups[1].ID
+	group2Users, err := adapter.GetGroupUsers(ctx, *group2Id)
+	assert.NoError(t, err, "error getting group users")
+	assert.Equal(t, len(mockServerConfig.Data.Users)%len(mockServerConfig.Data.Groups), len(group2Users), "The group user count should be equal to the number of users in the mock server config")
 }
