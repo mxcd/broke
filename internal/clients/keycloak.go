@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/mxcd/broke/internal/user"
+	progressbar "github.com/schollz/progressbar/v3"
+
 	"github.com/Nerzal/gocloak/v13"
 	"github.com/rs/zerolog/log"
 )
@@ -155,4 +158,102 @@ func (k *KeycloakClient) GetGroupUsers(ctx context.Context, id string) ([]*goclo
 
 func (k *KeycloakClient) GetRoleUsers(ctx context.Context, name string) ([]*gocloak.User, error) {
 	return k.Client.GetUsersByRoleName(ctx, k.Token.AccessToken, k.Realm, name, gocloak.GetUsersByRoleParams{})
+}
+
+func (k *KeycloakClient) GetUserRealmRoles(ctx context.Context, id string) (*gocloak.MappingsRepresentation, error) {
+	return k.Client.GetRoleMappingByUserID(ctx, k.Token.AccessToken, k.Realm, id)
+}
+
+func (k *KeycloakClient) GetUserGroups(ctx context.Context, id string) ([]*gocloak.Group, error) {
+	return k.Client.GetUserGroups(ctx, k.Token.AccessToken, k.Realm, id, gocloak.GetGroupsParams{BriefRepresentation: &[]bool{false}[0]})
+}
+
+func (k *KeycloakClient) GetFullGroupList(ctx context.Context) ([]*gocloak.Group, error) {
+	groups, err := k.GetGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*gocloak.Group, len(groups))
+
+	for i, group := range groups {
+		group, err := k.GetGroup(ctx, *group.ID)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = group
+	}
+	return result, nil
+}
+
+func (k *KeycloakClient) GetBrokeUserList(ctx context.Context) ([]*user.User, error) {
+	log.Debug().Str("client", k.Options.Name).Msg("Getting users from Keycloak")
+
+	keycloakUsers, err := k.GetUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Debug().Str("client", k.Options.Name).Msgf("Got %d users from Keycloak", len(keycloakUsers))
+
+	result := make([]*user.User, len(keycloakUsers))
+
+	log.Debug().Str("client", k.Options.Name).Msg("Getting groups and roles for users")
+
+	bar := progressbar.NewOptions(len(keycloakUsers),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionShowBytes(false),
+		progressbar.OptionSetWidth(50),
+		progressbar.OptionShowCount(),
+		progressbar.OptionSetElapsedTime(false),
+		progressbar.OptionSetPredictTime(false),
+		progressbar.OptionSetDescription("[green][Loading user groups and roles][reset]"),
+	)
+
+	for i, keycloakUser := range keycloakUsers {
+		user := &user.User{
+			Id:       *keycloakUser.ID,
+			Source:   k.Options.Name,
+			Username: *keycloakUser.Username,
+			Email:    *keycloakUser.Email,
+			Groups:   []string{},
+			Roles:    []string{},
+		}
+		userGroups, err := k.GetUserGroups(ctx, *keycloakUser.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, group := range userGroups {
+			user.Groups = append(user.Groups, *group.Name)
+			if group.RealmRoles != nil {
+				user.Roles = append(user.Roles, *group.RealmRoles...)
+			}
+			if group.ClientRoles != nil {
+				for _, role := range *group.ClientRoles {
+					user.Roles = append(user.Roles, role...)
+				}
+			}
+		}
+
+		realmRoles, err := k.GetUserRealmRoles(ctx, *keycloakUser.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		if realmRoles.RealmMappings != nil {
+			for _, role := range *realmRoles.RealmMappings {
+				user.Roles = append(user.Roles, *role.Name)
+			}
+		}
+
+		result[i] = user
+
+		bar.Add(1)
+	}
+
+	bar.Finish()
+	fmt.Println()
+
+	return result, nil
 }

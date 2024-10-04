@@ -1,25 +1,16 @@
 package planner
 
-type Plan struct {
-	UserPlans []UserPlan `json:"userPlans"`
-}
+import (
+	"github.com/mxcd/broke/internal/user"
+)
 
-type User struct {
-	// uuid of the user in keycloak
-	Id string `json:"id"`
-	// username of the user in keycloak
-	Username string `json:"username"`
-	// email of the user in keycloak
-	Email string `json:"email"`
-	// groups of the user in keycloak
-	Groups []string `json:"groups"`
-	// roles of the user in keycloak
-	Roles []string `json:"roles"`
+type Plan struct {
+	UserPlans []*UserPlan `json:"userPlans"`
 }
 
 type UserPlan struct {
-	User    *User    `json:"user"`
-	Actions *Actions `json:"actions"`
+	User    *user.User `json:"user"`
+	Actions *Actions   `json:"actions"`
 }
 
 type Actions struct {
@@ -60,4 +51,8 @@ type GitlabAddGroupAction struct {
 
 type GitlabSetAccessLevelAction struct {
 	AccessLevel string `json:"accessLevel"`
+}
+
+func (p *Plan) Print() {
+	// TODO
 }

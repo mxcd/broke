@@ -218,3 +218,50 @@ func getGitLabClient(ctx context.Context, userTargetConfig *config.UserTargetCon
 
 	return client, nil
 }
+
+func (c *ClientSet) GetUserSourceClient(userSource config.UserSourceConfig) (*KeycloakClient, error) {
+	if userSource.Keycloak != nil {
+		return c.KeycloakClients[userSource.Name], nil
+	}
+
+	return nil, fmt.Errorf("no client found for user source '%s'", userSource.Name)
+}
+
+func (c *ClientSet) GetUserTargetMailcowClient(userTarget config.UserTargetConfig) (*MailcowClient, error) {
+	if userTarget.Mailcow == nil {
+		return nil, fmt.Errorf("user target '%s' is not a mailcow target", userTarget.Name)
+	}
+
+	mailcowClient, ok := c.MailcowClients[userTarget.Name]
+	if !ok {
+		return nil, fmt.Errorf("no client found for user target '%s'", userTarget.Name)
+	}
+
+	return mailcowClient, nil
+}
+
+func (c *ClientSet) GetUserTargetOutlineClient(userTarget config.UserTargetConfig) (*OutlineClient, error) {
+	if userTarget.Outline == nil {
+		return nil, fmt.Errorf("user target '%s' is not an outline target", userTarget.Name)
+	}
+
+	outlineClient, ok := c.OutlineClients[userTarget.Name]
+	if !ok {
+		return nil, fmt.Errorf("no client found for user target '%s'", userTarget.Name)
+	}
+
+	return outlineClient, nil
+}
+
+func (c *ClientSet) GetUserTargetGitLabClient(userTarget config.UserTargetConfig) (*GitLabClient, error) {
+	if userTarget.GitLab == nil {
+		return nil, fmt.Errorf("user target '%s' is not a gitlab target", userTarget.Name)
+	}
+
+	gitLabClient, ok := c.GitLabClients[userTarget.Name]
+	if !ok {
+		return nil, fmt.Errorf("no client found for user target '%s'", userTarget.Name)
+	}
+
+	return gitLabClient, nil
+}
