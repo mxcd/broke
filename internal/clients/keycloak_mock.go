@@ -44,11 +44,20 @@ type KeycloakMockServerUser struct {
 }
 
 type KeycloakMockServerGroup struct {
-	Id         string   `json:"id"`
-	Name       string   `json:"name"`
-	Path       string   `json:"path"`
-	SubGroups  []string `json:"subGroups"`
-	RealmRoles []string `json:"realmRoles"`
+	Id         string                   `json:"id"`
+	Name       string                   `json:"name"`
+	Path       string                   `json:"path"`
+	SubGroups  []string                 `json:"subGroups"`
+	RealmRoles []string                 `json:"realmRoles"`
+	Access     KeycloakMockServerAccess `json:"access"`
+}
+
+type KeycloakMockServerAccess struct {
+	View             bool `json:"view"`
+	Manage           bool `json:"manage"`
+	ViewMembers      bool `json:"viewMembers"`
+	ManageMembers    bool `json:"manageMembers"`
+	ManageMembership bool `json:"manageMembership"`
 }
 
 func StartMockServer(ctx context.Context, config *KeycloakMockServerConfig) *http.Server {
@@ -222,8 +231,18 @@ func StartMockServer(ctx context.Context, config *KeycloakMockServerConfig) *htt
 			return
 		}
 
+		members := make([]KeycloakMockServerUser, 0)
+		for _, u := range config.Data.Users {
+			for _, g := range u.Groups {
+				if g == groupId {
+					members = append(members, u)
+					break
+				}
+			}
+		}
+
 		c.Header("Content-Type", "application/json")
-		c.JSON(http.StatusOK, group)
+		c.JSON(http.StatusOK, members)
 	})
 
 	server := &http.Server{
