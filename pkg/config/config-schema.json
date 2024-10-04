@@ -1,0 +1,249 @@
+{
+  "$defs": {
+    "BrokeConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "userSources": {
+          "items": {
+            "$ref": "#/$defs/UserSourceConfig"
+          },
+          "type": "array"
+        },
+        "userTargets": {
+          "items": {
+            "$ref": "#/$defs/UserTargetConfig"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "userSources",
+        "userTargets"
+      ],
+      "type": "object"
+    },
+    "GitlabConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "adminUsernameEnvironmentVariable": {
+          "type": "string"
+        },
+        "apiKeyEnvironmentVariable": {
+          "type": "string"
+        },
+        "mappings": {
+          "items": {
+            "$ref": "#/$defs/GitlabMappingConfig"
+          },
+          "type": "array"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "adminUsernameEnvironmentVariable",
+        "apiKeyEnvironmentVariable",
+        "mappings"
+      ],
+      "type": "object"
+    },
+    "GitlabGroupAssignment": {
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "type": "string"
+        },
+        "permission": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "group",
+        "permission"
+      ],
+      "type": "object"
+    },
+    "GitlabMappingConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "gitlabAccessLevel": {
+          "type": "string"
+        },
+        "gitlabGroupAssignments": {
+          "items": {
+            "$ref": "#/$defs/GitlabGroupAssignment"
+          },
+          "type": "array"
+        },
+        "group": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "KeycloakConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "adminPasswordEnvironmentVariable": {
+          "type": "string"
+        },
+        "adminUsernameEnvironmentVariable": {
+          "type": "string"
+        },
+        "realm": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "realm",
+        "adminUsernameEnvironmentVariable",
+        "adminPasswordEnvironmentVariable"
+      ],
+      "type": "object"
+    },
+    "MailcowConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "adminPasswordEnvironmentVariable": {
+          "type": "string"
+        },
+        "adminUsernameEnvironmentVariable": {
+          "type": "string"
+        },
+        "mappings": {
+          "items": {
+            "$ref": "#/$defs/MailcowMappingConfig"
+          },
+          "type": "array"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "adminUsernameEnvironmentVariable",
+        "adminPasswordEnvironmentVariable",
+        "mappings"
+      ],
+      "type": "object"
+    },
+    "MailcowMappingConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "OutlineConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "apiKeyEnvironmentVariable": {
+          "type": "string"
+        },
+        "mappings": {
+          "items": {
+            "$ref": "#/$defs/OutlineMappingConfig"
+          },
+          "type": "array"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "apiKeyEnvironmentVariable",
+        "mappings"
+      ],
+      "type": "object"
+    },
+    "OutlineMappingConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "type": "string"
+        },
+        "outlineGroup": {
+          "type": "string"
+        },
+        "outlineRole": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "UserLoadConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "UserSourceConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "keycloak": {
+          "$ref": "#/$defs/KeycloakConfig"
+        },
+        "loadConfig": {
+          "$ref": "#/$defs/UserLoadConfig"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "loadConfig"
+      ],
+      "type": "object"
+    },
+    "UserTargetConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "gitlab": {
+          "$ref": "#/$defs/GitlabConfig"
+        },
+        "mailcow": {
+          "$ref": "#/$defs/MailcowConfig"
+        },
+        "name": {
+          "type": "string"
+        },
+        "outline": {
+          "$ref": "#/$defs/OutlineConfig"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/mxcd/broke/pkg/config/broke-config",
+  "$ref": "#/$defs/BrokeConfig",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
