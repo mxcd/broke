@@ -84,7 +84,6 @@ func DoHttpRequest(client ApiClient, options *HttpRequestOptions) (*http.Respons
 		log.Error().Err(err).Str("client", client.GetName()).Msgf("Failed to send request")
 		return nil, err
 	}
-	defer response.Body.Close()
 
 	if response.StatusCode != expectedStatusCode {
 		log.Error().Str("client", client.GetName()).Msgf("Request failed with status %s. %d was expected", response.Status, expectedStatusCode)

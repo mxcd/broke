@@ -1,4 +1,4 @@
-internal/keycloak/playground_test.go
+internal/clients/keycloak_playground_test.go
 sandbox/
 .env
 

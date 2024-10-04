@@ -138,6 +138,12 @@
     "MailcowMappingConfig": {
       "additionalProperties": false,
       "properties": {
+        "authSource": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
         "group": {
           "type": "string"
         },
@@ -151,6 +157,10 @@
           "type": "array"
         }
       },
+      "required": [
+        "domain",
+        "authSource"
+      ],
       "type": "object"
     },
     "OutlineConfig": {

@@ -37,16 +37,34 @@ type UserTargetConfig struct {
 	GitLab  *GitLabConfig  `yaml:"gitlab,omitempty" json:"gitlab,omitempty"`
 }
 
+type MappingSet interface {
+	GetKeycloakGroup() *string
+	GetKeycloakRole() *string
+	GetKeycloakUsernames() *[]string
+}
+
 type MailcowConfig struct {
-	Url                              string                 `yaml:"url" json:"url"`
-	ApiKeyEnvironmentVariable        string                 `yaml:"apiKeyEnvironmentVariable" json:"apiKeyEnvironmentVariable"`
-	Mappings                         []MailcowMappingConfig `yaml:"mappings" json:"mappings"`
+	Url                       string                 `yaml:"url" json:"url"`
+	ApiKeyEnvironmentVariable string                 `yaml:"apiKeyEnvironmentVariable" json:"apiKeyEnvironmentVariable"`
+	Mappings                  []MailcowMappingConfig `yaml:"mappings" json:"mappings"`
 }
 
 type MailcowMappingConfig struct {
 	KeycloakGroup     *string   `yaml:"group,omitempty" json:"group,omitempty"`
 	KeycloakRole      *string   `yaml:"role,omitempty" json:"role,omitempty"`
 	KeycloakUsernames *[]string `yaml:"usernames,omitempty" json:"usernames,omitempty"`
+	Domain            string    `yaml:"domain" json:"domain"`
+	AuthSource        string    `yaml:"authSource" json:"authSource"`
+}
+
+func (m MailcowMappingConfig) GetKeycloakGroup() *string {
+	return m.KeycloakGroup
+}
+func (m MailcowMappingConfig) GetKeycloakRole() *string {
+	return m.KeycloakRole
+}
+func (m MailcowMappingConfig) GetKeycloakUsernames() *[]string {
+	return m.KeycloakUsernames
 }
 
 type OutlineConfig struct {
@@ -71,10 +89,20 @@ type OutlineMappingConfig struct {
 	OutlineRole       *OutlineRole `yaml:"outlineRole,omitempty" json:"outlineRole,omitempty"`
 }
 
+func (m OutlineMappingConfig) GetKeycloakGroup() *string {
+	return m.KeycloakGroup
+}
+func (m OutlineMappingConfig) GetKeycloakRole() *string {
+	return m.KeycloakRole
+}
+func (m OutlineMappingConfig) GetKeycloakUsernames() *[]string {
+	return m.KeycloakUsernames
+}
+
 type GitLabConfig struct {
-	Url                              string                `yaml:"url" json:"url"`
-	ApiKeyEnvironmentVariable        string                `yaml:"apiKeyEnvironmentVariable" json:"apiKeyEnvironmentVariable"`
-	Mappings                         []GitlabMappingConfig `yaml:"mappings" json:"mappings"`
+	Url                       string                `yaml:"url" json:"url"`
+	ApiKeyEnvironmentVariable string                `yaml:"apiKeyEnvironmentVariable" json:"apiKeyEnvironmentVariable"`
+	Mappings                  []GitlabMappingConfig `yaml:"mappings" json:"mappings"`
 }
 
 type GitlabAccessLevel string
@@ -100,6 +128,16 @@ type GitlabMappingConfig struct {
 	KeycloakUsernames      *[]string                `yaml:"usernames,omitempty" json:"usernames,omitempty"`
 	GitlabAccessLevel      *GitlabAccessLevel       `yaml:"gitlabAccessLevel,omitempty" json:"gitlabAccessLevel,omitempty"`
 	GitlabGroupAssignments *[]GitlabGroupAssignment `yaml:"gitlabGroupAssignments,omitempty" json:"gitlabGroupAssignments,omitempty"`
+}
+
+func (m GitlabMappingConfig) GetKeycloakGroup() *string {
+	return m.KeycloakGroup
+}
+func (m GitlabMappingConfig) GetKeycloakRole() *string {
+	return m.KeycloakRole
+}
+func (m GitlabMappingConfig) GetKeycloakUsernames() *[]string {
+	return m.KeycloakUsernames
 }
 
 type GitlabGroupAssignment struct {

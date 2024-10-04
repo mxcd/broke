@@ -122,22 +122,9 @@ func (p *Planner) ComputeUserActions(ctx context.Context, user *user.User) (*Act
 	if err != nil {
 		return nil, err
 	}
+	actions.MailcowActions = mailcowActions
 
 	return actions, nil
-}
-
-func (p *Planner) ComputeMailcowActions(ctx context.Context, user *user.User) ([]*MailcowAction, error) {
-	actions := []*MailcowAction{}
-
-  for _, userTarget := range p.Config.UserTargets {
-    if userTarget.Mailcow == nil {
-      continue
-    }
-
-    mailcowClient, err := p.ClientSet.GetUserTargetClient(userTarget)
-
-  }
-
 }
 
 func (p *Planner) Print() {

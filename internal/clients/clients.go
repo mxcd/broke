@@ -227,7 +227,7 @@ func (c *ClientSet) GetUserSourceClient(userSource config.UserSourceConfig) (*Ke
 	return nil, fmt.Errorf("no client found for user source '%s'", userSource.Name)
 }
 
-func (c *ClientSet) GetUserTargetMailcowClient(userTarget config.UserTargetConfig) (*MailcowClient, error) {
+func (c *ClientSet) GetUserTargetMailcowClient(userTarget *config.UserTargetConfig) (*MailcowClient, error) {
 	if userTarget.Mailcow == nil {
 		return nil, fmt.Errorf("user target '%s' is not a mailcow target", userTarget.Name)
 	}
@@ -240,7 +240,7 @@ func (c *ClientSet) GetUserTargetMailcowClient(userTarget config.UserTargetConfi
 	return mailcowClient, nil
 }
 
-func (c *ClientSet) GetUserTargetOutlineClient(userTarget config.UserTargetConfig) (*OutlineClient, error) {
+func (c *ClientSet) GetUserTargetOutlineClient(userTarget *config.UserTargetConfig) (*OutlineClient, error) {
 	if userTarget.Outline == nil {
 		return nil, fmt.Errorf("user target '%s' is not an outline target", userTarget.Name)
 	}
@@ -253,7 +253,7 @@ func (c *ClientSet) GetUserTargetOutlineClient(userTarget config.UserTargetConfi
 	return outlineClient, nil
 }
 
-func (c *ClientSet) GetUserTargetGitLabClient(userTarget config.UserTargetConfig) (*GitLabClient, error) {
+func (c *ClientSet) GetUserTargetGitLabClient(userTarget *config.UserTargetConfig) (*GitLabClient, error) {
 	if userTarget.GitLab == nil {
 		return nil, fmt.Errorf("user target '%s' is not a gitlab target", userTarget.Name)
 	}

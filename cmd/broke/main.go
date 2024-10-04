@@ -42,7 +42,20 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 					initApplication(c)
-					// TODO
+					plannerInstance, err := planner.NewPlanner(&planner.PlannerOptions{
+						ConfigFileName: c.String("config"),
+					})
+					if err != nil {
+						return err
+					}
+					if c.Bool("verbose") || c.Bool("very-verbose") {
+						plannerInstance.Print()
+					}
+					err = plannerInstance.Run()
+					if err != nil {
+						return err
+					}
+
 					return nil
 				},
 			},
