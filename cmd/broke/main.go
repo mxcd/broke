@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/mxcd/broke/internal/planner"
+	"github.com/mxcd/broke/internal/util"
 	"github.com/urfave/cli/v2"
 )
 
@@ -27,17 +29,21 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			{
-				Name:    "run",
-				Aliases: []string{"s"},
-				Usage:   "Run identity broker",
+				Name:  "run",
+				Usage: "Run identity broker",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:    "config",
-						Aliases: []string{"c"},
-						Value:   "",
-						Usage:   "*.broke.yml file to be used",
-						EnvVars: []string{"BROKE_CONFIG_FILE"},
+						Name:     "config",
+						Aliases:  []string{"c"},
+						Required: true,
+						Usage:    "*.broke.yml file to be used",
+						EnvVars:  []string{"BROKE_CONFIG_FILE"},
 					},
+				},
+				Action: func(c *cli.Context) error {
+					initApplication(c)
+					// TODO
+					return nil
 				},
 			},
 			{
@@ -45,16 +51,29 @@ func main() {
 				Usage: "Plan the broker run",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:    "config",
-						Aliases: []string{"c"},
-						Value:   "",
-						Usage:   "*.broke.yml file to be used",
-						EnvVars: []string{"BROKE_CONFIG_FILE"},
+						Name:     "config",
+						Aliases:  []string{"c"},
+						Required: true,
+						Usage:    "*.broke.yml file to be used",
+						EnvVars:  []string{"BROKE_CONFIG_FILE"},
 					},
 				},
 				Action: func(c *cli.Context) error {
 					initApplication(c)
-					// TODO
+					plannerInstance, err := planner.NewPlanner(&planner.PlannerOptions{
+						ConfigFileName: c.String("config"),
+					})
+					if err != nil {
+						return err
+					}
+					if c.Bool("verbose") || c.Bool("very-verbose") {
+						plannerInstance.Print()
+					}
+					err = plannerInstance.Plan()
+					if err != nil {
+						return err
+					}
+
 					return nil
 				},
 			},
@@ -89,7 +108,6 @@ func initApplication(c *cli.Context) error {
 	util.PrintLogo(c)
 	util.SetLogLevel(c)
 	util.SetCliContext(c)
-	util.GetRootDir()
-	err := state.LoadState(c)
-	return err
+	util.LoadDotEnv()
+	return nil
 }

@@ -5,12 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Package",
+      "name": "broke plan",
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "main.go",
-      "args": ["run"]
+      "program": "cmd/broke/main.go",
+      "args": ["-v", "plan", "-c", "sandbox/test.broke.yml"],
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

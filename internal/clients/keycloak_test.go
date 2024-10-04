@@ -1,4 +1,4 @@
-package keycloak
+package clients
 
 import (
 	"context"
@@ -58,8 +58,8 @@ func getMockServerConfig() *KeycloakMockServerConfig {
 	return mockServerConfig
 }
 
-func getAdapter(ctx context.Context, t *testing.T) *KeycloakAdapter {
-	adapter, err := NewKeycloakAdapter(ctx, &KeycloakAdapterOptions{
+func getAdapter(ctx context.Context, t *testing.T) *KeycloakClient {
+	adapter, err := NewKeycloakClient(ctx, &KeycloakClientOptions{
 		Url:      "http://localhost:28080",
 		Realm:    "test",
 		Username: "admin",

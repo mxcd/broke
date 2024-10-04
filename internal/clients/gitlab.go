@@ -1,16 +1,19 @@
-package gitlab
+package clients
 
 import (
 	"fmt"
+
 	"github.com/rs/zerolog/log"
 	"github.com/xanzy/go-gitlab"
 )
 
-type Client struct {
-	Client *gitlab.Client
+type GitLabClient struct {
+	Client  *gitlab.Client
+	Options *GitLabClientOptions
 }
 
-type ClientConfig struct {
+type GitLabClientOptions struct {
+	Name  string `yaml:"name"`
 	Url   string `yaml:"url"`
 	Token string `yaml:"token"`
 }
@@ -23,19 +26,31 @@ var AccessToValueMap = map[string]gitlab.AccessLevelValue{
 	"Owner":      gitlab.OwnerPermissions,
 }
 
-func NewGitlabClient(config ClientConfig) (*Client, error) {
-	gitApiClient, err := gitlab.NewClient(config.Token, gitlab.WithBaseURL(config.Url))
+func NewGitLabClient(config *GitLabClientOptions) (*GitLabClient, error) {
+	gitlabApiClient, err := gitlab.NewClient(config.Token, gitlab.WithBaseURL(config.Url))
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to create client")
 		return nil, err
 	}
 
-	return &Client{
-		Client: gitApiClient,
+	return &GitLabClient{
+		Client:  gitlabApiClient,
+		Options: config,
 	}, nil
 }
 
-func (c *Client) getUserIdByName(username *string) (*int, error) {
+func (c *GitLabClient) TestConnection() error {
+	log.Debug().Msgf("Testing connection to GitLab API at '%s'", c.Options.Url)
+	_, _, err := c.Client.Users.CurrentUser()
+	if err != nil {
+		log.Error().Err(err).Msgf("Failed to test GitLab API connection for user target '%s'", c.Options.Name)
+		return err
+	}
+	log.Debug().Msgf("Successfully connected to GitLab API at '%s'", c.Options.Url)
+	return nil
+}
+
+func (c *GitLabClient) getUserIdByName(username *string) (*int, error) {
 	users, res, err := c.Client.Users.ListUsers(&gitlab.ListUsersOptions{Username: username})
 	if err != nil {
 		return nil, err
@@ -54,7 +69,7 @@ func (c *Client) getUserIdByName(username *string) (*int, error) {
 	return &users[0].ID, nil
 }
 
-func (c *Client) addUserToGroup(userId *int, groupId int, permissions string) error {
+func (c *GitLabClient) addUserToGroup(userId *int, groupId int, permissions string) error {
 	gitlabAccessValue, ok := AccessToValueMap[permissions]
 	if !ok {
 		errorMessage := fmt.Sprintf("Invalid permission %s", permissions)
@@ -75,7 +90,7 @@ func (c *Client) addUserToGroup(userId *int, groupId int, permissions string) er
 	return nil
 }
 
-func (c *Client) getGroupIdByName(groupName string) (*int, error) {
+func (c *GitLabClient) getGroupIdByName(groupName string) (*int, error) {
 	groups, r, err := c.Client.Groups.ListGroups(&gitlab.ListGroupsOptions{Search: &groupName})
 	if err != nil {
 		return nil, err

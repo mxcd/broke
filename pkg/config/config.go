@@ -34,19 +34,19 @@ type UserTargetConfig struct {
 	Name    string         `yaml:"name" json:"name"`
 	Mailcow *MailcowConfig `yaml:"mailcow,omitempty" json:"mailcow,omitempty"`
 	Outline *OutlineConfig `yaml:"outline,omitempty" json:"outline,omitempty"`
-	Gitlab  *GitlabConfig  `yaml:"gitlab,omitempty" json:"gitlab,omitempty"`
+	GitLab  *GitLabConfig  `yaml:"gitlab,omitempty" json:"gitlab,omitempty"`
 }
 
 type MailcowConfig struct {
 	Url                              string                 `yaml:"url" json:"url"`
-	AdminUsernameEnvironmentVariable string                 `yaml:"adminUsernameEnvironmentVariable" json:"adminUsernameEnvironmentVariable"`
-	AdminPasswordEnvironmentVariable string                 `yaml:"adminPasswordEnvironmentVariable" json:"adminPasswordEnvironmentVariable"`
+	ApiKeyEnvironmentVariable        string                 `yaml:"apiKeyEnvironmentVariable" json:"apiKeyEnvironmentVariable"`
 	Mappings                         []MailcowMappingConfig `yaml:"mappings" json:"mappings"`
 }
 
 type MailcowMappingConfig struct {
-	KeycloakGroup *string `yaml:"group,omitempty" json:"group,omitempty"`
-	KeycloakRole  *string `yaml:"role,omitempty" json:"role,omitempty"`
+	KeycloakGroup     *string   `yaml:"group,omitempty" json:"group,omitempty"`
+	KeycloakRole      *string   `yaml:"role,omitempty" json:"role,omitempty"`
+	KeycloakUsernames *[]string `yaml:"usernames,omitempty" json:"usernames,omitempty"`
 }
 
 type OutlineConfig struct {
@@ -64,15 +64,15 @@ const (
 )
 
 type OutlineMappingConfig struct {
-	KeycloakGroup *string      `yaml:"group,omitempty" json:"group,omitempty"`
-	KeycloakRole  *string      `yaml:"role,omitempty" json:"role,omitempty"`
-	OutlineGroup  *string      `yaml:"outlineGroup,omitempty" json:"outlineGroup,omitempty"`
-	OutlineRole   *OutlineRole `yaml:"outlineRole,omitempty" json:"outlineRole,omitempty"`
+	KeycloakGroup     *string      `yaml:"group,omitempty" json:"group,omitempty"`
+	KeycloakRole      *string      `yaml:"role,omitempty" json:"role,omitempty"`
+	KeycloakUsernames *[]string    `yaml:"usernames,omitempty" json:"usernames,omitempty"`
+	OutlineGroup      *string      `yaml:"outlineGroup,omitempty" json:"outlineGroup,omitempty"`
+	OutlineRole       *OutlineRole `yaml:"outlineRole,omitempty" json:"outlineRole,omitempty"`
 }
 
-type GitlabConfig struct {
+type GitLabConfig struct {
 	Url                              string                `yaml:"url" json:"url"`
-	AdminUsernameEnvironmentVariable string                `yaml:"adminUsernameEnvironmentVariable" json:"adminUsernameEnvironmentVariable"`
 	ApiKeyEnvironmentVariable        string                `yaml:"apiKeyEnvironmentVariable" json:"apiKeyEnvironmentVariable"`
 	Mappings                         []GitlabMappingConfig `yaml:"mappings" json:"mappings"`
 }
@@ -97,6 +97,7 @@ const (
 type GitlabMappingConfig struct {
 	KeycloakGroup          *string                  `yaml:"group,omitempty" json:"group,omitempty"`
 	KeycloakRole           *string                  `yaml:"role,omitempty" json:"role,omitempty"`
+	KeycloakUsernames      *[]string                `yaml:"usernames,omitempty" json:"usernames,omitempty"`
 	GitlabAccessLevel      *GitlabAccessLevel       `yaml:"gitlabAccessLevel,omitempty" json:"gitlabAccessLevel,omitempty"`
 	GitlabGroupAssignments *[]GitlabGroupAssignment `yaml:"gitlabGroupAssignments,omitempty" json:"gitlabGroupAssignments,omitempty"`
 }
