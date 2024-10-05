@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/mxcd/broke/internal/clients"
+	"github.com/mxcd/broke/internal/util"
+	"github.com/schollz/progressbar/v3"
 )
 
 type Runner struct {
@@ -27,7 +29,10 @@ func (p *Planner) Run() error {
 	if err != nil {
 		return err
 	}
-	plan.Print()
+
+	if util.GetCliContext().Bool("verbose") || util.GetCliContext().Bool("very-verbose") {
+		plan.Print()
+	}
 
 	runner := &Runner{
 		Context:   ctx,
@@ -40,6 +45,21 @@ func (p *Planner) Run() error {
 }
 
 func (p *Plan) Execute(runner *Runner) error {
+
+	showProgress := util.GetCliContext().Bool("progress")
+	var bar *progressbar.ProgressBar
+	if showProgress {
+		bar = progressbar.NewOptions(len(p.UserPlans),
+			progressbar.OptionEnableColorCodes(true),
+			progressbar.OptionShowBytes(false),
+			progressbar.OptionSetWidth(50),
+			progressbar.OptionShowCount(),
+			progressbar.OptionSetElapsedTime(false),
+			progressbar.OptionSetPredictTime(false),
+			progressbar.OptionSetDescription("[green][Executing changes][reset]"),
+		)
+	}
+
 	for _, userPlan := range p.UserPlans {
 		if userPlan.Actions.MailcowActions != nil {
 			err := ExecuteUserMailcowActions(runner, userPlan)
@@ -48,6 +68,14 @@ func (p *Plan) Execute(runner *Runner) error {
 			}
 		}
 		// TODO: add more targets
+
+		if showProgress {
+			bar.Add(1)
+		}
+	}
+
+	if showProgress {
+		bar.Finish()
 	}
 	return nil
 }

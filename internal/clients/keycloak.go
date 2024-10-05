@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/mxcd/broke/internal/user"
+	"github.com/mxcd/broke/internal/util"
 	progressbar "github.com/schollz/progressbar/v3"
 
 	"github.com/Nerzal/gocloak/v13"
@@ -200,15 +201,19 @@ func (k *KeycloakClient) GetBrokeUserList(ctx context.Context) ([]*user.User, er
 
 	log.Debug().Str("client", k.Options.Name).Msg("Getting groups and roles for users")
 
-	bar := progressbar.NewOptions(len(keycloakUsers),
-		progressbar.OptionEnableColorCodes(true),
-		progressbar.OptionShowBytes(false),
-		progressbar.OptionSetWidth(50),
-		progressbar.OptionShowCount(),
-		progressbar.OptionSetElapsedTime(false),
-		progressbar.OptionSetPredictTime(false),
-		progressbar.OptionSetDescription("[green][Loading user groups and roles][reset]"),
-	)
+	showProgress := util.GetCliContext().Bool("progress")
+	var bar *progressbar.ProgressBar
+	if showProgress {
+		bar = progressbar.NewOptions(len(keycloakUsers),
+			progressbar.OptionEnableColorCodes(true),
+			progressbar.OptionShowBytes(false),
+			progressbar.OptionSetWidth(50),
+			progressbar.OptionShowCount(),
+			progressbar.OptionSetElapsedTime(false),
+			progressbar.OptionSetPredictTime(false),
+			progressbar.OptionSetDescription("[green][Loading user groups and roles][reset]"),
+		)
+	}
 
 	for i, keycloakUser := range keycloakUsers {
 		user := &user.User{
@@ -249,11 +254,15 @@ func (k *KeycloakClient) GetBrokeUserList(ctx context.Context) ([]*user.User, er
 
 		result[i] = user
 
-		bar.Add(1)
+		if showProgress {
+			bar.Add(1)
+		}
 	}
 
-	bar.Finish()
-	fmt.Println()
+	if showProgress {
+		bar.Finish()
+		fmt.Println()
+	}
 
 	return result, nil
 }

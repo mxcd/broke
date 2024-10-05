@@ -5,8 +5,10 @@ import (
 
 	"github.com/mxcd/broke/internal/clients"
 	"github.com/mxcd/broke/internal/user"
+	"github.com/mxcd/broke/internal/util"
 	"github.com/mxcd/broke/pkg/config"
 	"github.com/rs/zerolog/log"
+	"github.com/schollz/progressbar/v3"
 )
 
 type Planner struct {
@@ -49,6 +51,7 @@ func (p *Planner) Plan() error {
 	if err != nil {
 		return err
 	}
+
 	plan.Print()
 
 	return nil
@@ -96,6 +99,20 @@ func (p *Planner) ComputePlan(ctx context.Context, users []*user.User) (*Plan, e
 		UserPlans: []*UserPlan{},
 	}
 
+	showProgress := util.GetCliContext().Bool("progress")
+	var bar *progressbar.ProgressBar
+	if showProgress {
+		bar = progressbar.NewOptions(len(users),
+			progressbar.OptionEnableColorCodes(true),
+			progressbar.OptionShowBytes(false),
+			progressbar.OptionSetWidth(50),
+			progressbar.OptionShowCount(),
+			progressbar.OptionSetElapsedTime(false),
+			progressbar.OptionSetPredictTime(false),
+			progressbar.OptionSetDescription("[green][Planning actions][reset]"),
+		)
+	}
+
 	for _, user := range users {
 		actions, err := p.ComputeUserActions(ctx, user)
 		if err != nil {
@@ -106,6 +123,14 @@ func (p *Planner) ComputePlan(ctx context.Context, users []*user.User) (*Plan, e
 			User:    user,
 			Actions: actions,
 		})
+
+		if showProgress {
+			bar.Add(1)
+		}
+	}
+
+	if showProgress {
+		bar.Finish()
 	}
 
 	return plan, nil
@@ -128,5 +153,8 @@ func (p *Planner) ComputeUserActions(ctx context.Context, user *user.User) (*Act
 }
 
 func (p *Planner) Print() {
+	if !util.GetCliContext().Bool("verbose") && !util.GetCliContext().Bool("very-verbose") {
+		return
+	}
 	p.Config.Print()
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/mxcd/broke/internal/user"
+	"github.com/mxcd/broke/internal/util"
 	"github.com/mxcd/broke/pkg/config"
 	"github.com/rs/zerolog/log"
 )
@@ -65,6 +66,11 @@ type GitlabSetAccessLevelAction struct {
 }
 
 func (p *Plan) Print() {
+
+	if !util.GetCliContext().Bool("verbose") && !util.GetCliContext().Bool("very-verbose") {
+		return
+	}
+
 	log.Info().Msgf("Plan for %d users:", len(p.UserPlans))
 
 	// Iterate over each user plan and print details

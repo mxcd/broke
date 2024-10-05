@@ -139,6 +139,7 @@ func getKeycloakClient(ctx context.Context, userSourceConfig *config.UserSourceC
 }
 
 func getMailcowClient(ctx context.Context, userTargetConfig *config.UserTargetConfig) (*MailcowClient, error) {
+	_ = ctx
 	userTargetConfigName := userTargetConfig.Name
 	mailcowConfig := userTargetConfig.Mailcow
 
@@ -166,6 +167,7 @@ func getMailcowClient(ctx context.Context, userTargetConfig *config.UserTargetCo
 }
 
 func getOutlineClient(ctx context.Context, userTargetConfig *config.UserTargetConfig) (*OutlineClient, error) {
+	_ = ctx
 	userTargetConfigName := userTargetConfig.Name
 	outlineConfig := userTargetConfig.Outline
 
@@ -193,6 +195,7 @@ func getOutlineClient(ctx context.Context, userTargetConfig *config.UserTargetCo
 }
 
 func getGitLabClient(ctx context.Context, userTargetConfig *config.UserTargetConfig) (*GitLabClient, error) {
+	_ = ctx
 	userTargetConfigName := userTargetConfig.Name
 	gitLabConfig := userTargetConfig.GitLab
 

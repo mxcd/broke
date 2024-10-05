@@ -26,6 +26,12 @@ func main() {
 				Usage:   "trace output",
 				EnvVars: []string{"BROKE_VERY_VERBOSE"},
 			},
+			&cli.BoolFlag{
+				Name:    "progress",
+				Aliases: []string{"p"},
+				Usage:   "show progress",
+				EnvVars: []string{"BROKE_PROGRESS"},
+			},
 		},
 		Commands: []*cli.Command{
 			{

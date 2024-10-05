@@ -29,12 +29,12 @@ func SetLogLevel(c *cli.Context) {
 		TimeFormat: time.RFC3339,
 	}).With().Caller().Logger()
 
-	if c.Bool("verbose") {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	}
-
 	if c.Bool("very-verbose") {
 		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	} else if c.Bool("verbose") {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 }
 
